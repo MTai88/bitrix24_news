@@ -1,0 +1,198 @@
+/* Лента новостей mtai.news */
+
+.mnt-feed {
+	max-width: 780px;
+	margin: 0 auto;
+}
+
+.mnt-feed__head {
+	margin-bottom: 16px;
+}
+
+.mnt-feed__title {
+	margin: 0 0 12px;
+	font-size: 26px;
+	line-height: 1.2;
+	color: #1d2939;
+}
+
+.mnt-feed__tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.mnt-feed__tab {
+	display: inline-block;
+	padding: 6px 14px;
+	border: 1px solid #d0d5dd;
+	border-radius: 16px;
+	background: #fff;
+	color: #344054;
+	font-size: 13px;
+	text-decoration: none;
+	transition: background .15s, color .15s;
+}
+
+.mnt-feed__tab:hover {
+	background: #f2f4f7;
+}
+
+.mnt-feed__tab.is-active {
+	background: #2e6ee4;
+	border-color: #2e6ee4;
+	color: #fff;
+}
+
+/* карточка новости */
+
+.mnt-card {
+	display: flex;
+	gap: 16px;
+	padding: 16px;
+	margin-bottom: 12px;
+	background: #fff;
+	border: 1px solid #e4e7ec;
+	border-radius: 10px;
+}
+
+.mnt-card__pic {
+	flex: 0 0 200px;
+}
+
+.mnt-card__pic img {
+	display: block;
+	width: 200px;
+	height: 130px;
+	object-fit: cover;
+	border-radius: 8px;
+}
+
+.mnt-card__body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.mnt-card__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 12px;
+	margin-bottom: 4px;
+	font-size: 12px;
+	color: #667085;
+}
+
+.mnt-card__section {
+	color: #2e6ee4;
+}
+
+.mnt-card__title {
+	margin: 0 0 6px;
+	font-size: 18px;
+	line-height: 1.3;
+}
+
+.mnt-card__title a {
+	color: #1d2939;
+	text-decoration: none;
+}
+
+.mnt-card__title a:hover {
+	color: #2e6ee4;
+}
+
+.mnt-card__text {
+	margin: 0 0 10px;
+	color: #475467;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+/* статистика карточки: лайки, просмотры, комментарии */
+
+.mnt-card__stats {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px 18px;
+}
+
+.mnt-card__stat {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 13px;
+	color: #667085;
+	text-decoration: none;
+}
+
+.mnt-card__stat--comments:hover {
+	color: #2e6ee4;
+}
+
+/* штатная разметка like_react рассчитана на строку Живой ленты и сдвигает
+   панель эмодзи влево на 87px — в карточке ленты она налегает на кнопку */
+.mnt-card__stat .feed-post-emoji-top-panel-box {
+	padding-left: 0;
+	margin-left: 0;
+}
+
+.mnt-card__stat-icon {
+	display: inline-flex;
+	line-height: 0;
+	opacity: .8;
+}
+
+/* сентинел подгрузки */
+
+.mnt-feed__sentinel {
+	display: flex;
+	justify-content: center;
+	padding: 24px 0;
+}
+
+.mnt-feed__spinner {
+	width: 28px;
+	height: 28px;
+	border: 3px solid #e4e7ec;
+	border-top-color: #2e6ee4;
+	border-radius: 50%;
+	animation: mnt-spin .8s linear infinite;
+	opacity: 0;
+	transition: opacity .2s;
+}
+
+.mnt-feed__sentinel.is-loading .mnt-feed__spinner {
+	opacity: 1;
+}
+
+.mnt-feed__sentinel.is-done {
+	display: none;
+}
+
+@keyframes mnt-spin {
+	to { transform: rotate(360deg); }
+}
+
+.mnt-feed__done {
+	text-align: center;
+	color: #98a2b3;
+	font-size: 13px;
+	padding: 16px 0;
+}
+
+.mnt-feed__empty {
+	padding: 24px 0;
+	color: #667085;
+}
+
+@media (max-width: 600px) {
+	.mnt-card {
+		flex-direction: column;
+	}
+
+	.mnt-card__pic,
+	.mnt-card__pic img {
+		width: 100%;
+	}
+}
