@@ -70,11 +70,32 @@
 	gap: 8px;
 }
 
-/* штатная разметка like_react рассчитана на строку Живой ленты и сдвигает
-   панель эмодзи влево на 87px — здесь она налегает на кнопку */
+/* штатная разметка like_react рассчитана на строку Живой ленты
+   (.feed-post-cont-wrap): панель эмодзи сдвинута влево (margin -87px)
+   и обрезана (max-height 22px + overflow hidden). Снимаем и сажаем
+   панель на одну линию с кнопкой */
+.mnt-detail__like .feed-post-emoji-top-panel-outer {
+	display: inline-flex;
+	align-items: center;
+	padding-bottom: 0;
+}
+
 .mnt-detail__like .feed-post-emoji-top-panel-box {
-	padding-left: 0;
-	margin-left: 0;
+	padding: 0;
+	margin: 0;
+}
+
+.mnt-detail__like .feed-post-emoji-top-panel-box.feed-post-emoji-top-panel-container-active {
+	display: inline-flex;
+	align-items: center;
+	max-height: none;
+	overflow: visible;
+}
+
+/* блок комментариев — по ширине статьи, иначе заголовок уезжает влево */
+.mnt-detail__comments {
+	max-width: 780px;
+	margin: 0 auto;
 }
 
 .mnt-detail__comments-title {

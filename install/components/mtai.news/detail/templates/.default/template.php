@@ -75,40 +75,42 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
 	</div>
 </article>
 
-<h2 class="mnt-detail__comments-title" id="mnt-comments">Комментарии</h2>
+<section class="mnt-detail__comments" id="mnt-comments">
+	<h2 class="mnt-detail__comments-title">Комментарии</h2>
 
-<?php if (!empty($arResult['ID'])): ?>
-	<?php $APPLICATION->IncludeComponent(
-		'bitrix:catalog.comments',
-		'stream',
-		[
-			'BLOG_TITLE' => 'Комментарии',
-			'BLOG_URL' => $arParams['BLOG_URL'],
-			'BLOG_USE' => 'Y',
-			'CACHE_TIME' => '0',
-			'CACHE_TYPE' => 'A',
-			'CHECK_DATES' => 'Y',
-			'COMMENTS_COUNT' => '10',
-			'ELEMENT_CODE' => '',
-			'ELEMENT_ID' => $arResult['ID'],
-			'EMAIL_NOTIFY' => 'N',
-			'FB_USE' => 'N',
-			'IBLOCK_ID' => $arParams['IBLOCK_ID'],
-			'IBLOCK_TYPE' => $arParams['IBLOCK_TYPE'],
-			'PATH_TO_SMILE' => '/bitrix/images/blog/smile/',
-			'RATING_TYPE' => '',
-			'SHOW_DEACTIVATED' => 'N',
-			'SHOW_RATING' => 'Y',
-			'SHOW_SPAM' => 'Y',
-			'TEMPLATE_THEME' => 'blue',
-			'URL_TO_COMMENT' => '',
-			'VK_USE' => 'N',
-			'WIDTH' => '',
-		],
-		false,
-		['HIDE_ICONS' => 'Y']
-	); ?>
-<?php endif; ?>
+	<?php if (!empty($arResult['ID'])): ?>
+		<?php $APPLICATION->IncludeComponent(
+			'bitrix:catalog.comments',
+			'stream',
+			[
+				'BLOG_TITLE' => 'Комментарии',
+				'BLOG_URL' => $arParams['BLOG_URL'],
+				'BLOG_USE' => 'Y',
+				'CACHE_TIME' => '0',
+				'CACHE_TYPE' => 'A',
+				'CHECK_DATES' => 'Y',
+				'COMMENTS_COUNT' => '10',
+				'ELEMENT_CODE' => '',
+				'ELEMENT_ID' => $arResult['ID'],
+				'EMAIL_NOTIFY' => 'N',
+				'FB_USE' => 'N',
+				'IBLOCK_ID' => $arParams['IBLOCK_ID'],
+				'IBLOCK_TYPE' => $arParams['IBLOCK_TYPE'],
+				'PATH_TO_SMILE' => '/bitrix/images/blog/smile/',
+				'RATING_TYPE' => '',
+				'SHOW_DEACTIVATED' => 'N',
+				'SHOW_RATING' => 'Y',
+				'SHOW_SPAM' => 'Y',
+				'TEMPLATE_THEME' => 'blue',
+				'URL_TO_COMMENT' => '',
+				'VK_USE' => 'N',
+				'WIDTH' => '',
+			],
+			false,
+			['HIDE_ICONS' => 'Y']
+		); ?>
+	<?php endif; ?>
+</section>
 
 <script>
 	// «Назад» — на предыдущую запись истории: лента при этом сама

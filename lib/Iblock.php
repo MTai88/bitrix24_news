@@ -3,6 +3,7 @@
 namespace Mtai\News;
 
 use Bitrix\Main\Loader;
+use Bitrix\Main\Config\Option;
 use Bitrix\Main\SiteTable;
 use Bitrix\Main\UrlRewriter;
 use CIBlock;
@@ -10,25 +11,30 @@ use CIBlockType;
 use RuntimeException;
 
 /**
- * Инфоблок новостей модуля: тип mtai_news + инфоблок «Новости» (code mtai_news).
+ * Инфоблок новостей модуля: тип news + инфоблок «Новости» (code news).
  *
  * Разделы инфоблока — категории новостей, элементы — сами новости.
- * Инфоблок создаётся сразу с расширенным управлением прав (RIGHTS_MODE=E):
- * администраторы портала (группа 1) — полный доступ (X), все пользователи
- * (группа 2) — чтение (R). Дальше права настраиваются в админке, в том числе
- * по разделам и элементам.
+ * Семантика переиспользования: если тип/инфоблок news уже есть (заведены
+ * руками или другим решением) — модуль использует их, ничего не удаляя;
+ * если нет — создаёт. Существующий инфоблок в простом режиме прав
+ * переводится в расширенный (RIGHTS_MODE=E: G1→X, G2→R), уже настроенные
+ * права при этом не трогаются.
  *
- * Свойства BLOG_POST_ID / BLOG_COMMENTS_COUNT не создаются установщиком:
+ * Что модуль создал сам, записывается в опции модуля: uninstall удаляет
+ * только созданное им, чужие тип/инфоблок остаются.
+ *
+ * Свойства BLOG_POST_ID / BLOG_COMMENTS_CNT не создаются установщиком:
  * их заводит штатный bitrix:catalog.comments при первом открытии детальной
- * страницы (CIBlockPropertyTools::CODE_BLOG_POST / CODE_BLOG_COMMENTS_COUNT).
+ * страницы (CIBlockPropertyTools::CODE_BLOG_POST / CODE_BLOG_COMMENTS_COUNT —
+ * значение последней константы именно BLOG_COMMENTS_CNT).
  */
 class Iblock
 {
-	/** Собственный тип инфоблоков модуля. */
-	public const TYPE = 'mtai_news';
+	/** Тип инфоблоков новостей. */
+	public const TYPE = 'news';
 
 	/** Символьный код инфоблока новостей. */
-	public const CODE = 'mtai_news';
+	public const CODE = 'news';
 
 	/** Публичный раздел новостей. */
 	public const PUBLIC_PATH = '/news/';
@@ -42,6 +48,9 @@ class Iblock
 	 * CODE_BLOG_COMMENTS_COUNT, но её значение — BLOG_COMMENTS_CNT.
 	 */
 	public const PROP_BLOG_COMMENTS_COUNT = 'BLOG_COMMENTS_CNT';
+
+	private const OPTION_CREATED_IBLOCK = 'created_iblock';
+	private const OPTION_CREATED_TYPE = 'created_type';
 
 	/** @return int ID инфоблока новостей, 0 если ещё не создан */
 	public static function getIblockId(): int
@@ -62,48 +71,79 @@ class Iblock
 	}
 
 	/**
-	 * Создаёт тип инфоблоков и инфоблок новостей. Повторный вызов безопасен:
-	 * существующий инфоблок переиспользуется, настроенные вручную права
-	 * не перезаписываются.
+	 * Обеспечивает тип news + инфоблок news. Повторный вызов безопасен:
+	 * существующий тип и инфоблок переиспользуются, настроенные вручную
+	 * права не перезаписываются.
 	 *
 	 * @return int ID инфоблока новостей
 	 * @throws RuntimeException
 	 */
 	public static function install(): int
 	{
+		Loader::includeModule('iblock');
+
 		$iblockId = self::getIblockId();
+		self::ensureType();
+
 		if ($iblockId > 0)
 		{
+			self::enableExtendedRights($iblockId);
+			Option::set('mtai.news', self::OPTION_CREATED_IBLOCK, 'N');
+			Option::set('mtai.news', self::OPTION_CREATED_TYPE, 'N');
+
 			return $iblockId;
 		}
 
+		$iblockId = self::createIblock();
+		Option::set('mtai.news', self::OPTION_CREATED_IBLOCK, 'Y');
+		// тип могли создать здесь же (при пустом портале)
 		$rsType = CIBlockType::GetList([], ['=ID' => self::TYPE]);
-		if (!$rsType->Fetch())
+		Option::set('mtai.news', self::OPTION_CREATED_TYPE, $rsType->Fetch() ? 'N' : 'Y');
+
+		return $iblockId;
+	}
+
+	/**
+	 * Тип news: создаётся только если его нет нигде на портале.
+	 * @throws RuntimeException
+	 */
+	protected static function ensureType(): void
+	{
+		$rsType = CIBlockType::GetList([], ['=ID' => self::TYPE]);
+		if ($rsType->Fetch())
 		{
-			$obType = new CIBlockType();
-			$ok = $obType->Add([
-				'ID' => self::TYPE,
-				'SECTIONS' => 'Y',
-				'SORT' => 95,
-				'LANG' => [
-					'ru' => [
-						'NAME' => 'Новости (mtai.news)',
-						'SECTION_NAME' => 'Категория новостей',
-						'ELEMENT_NAME' => 'Новость',
-					],
-					'en' => [
-						'NAME' => 'News (mtai.news)',
-						'SECTION_NAME' => 'News category',
-						'ELEMENT_NAME' => 'News item',
-					],
-				],
-			]);
-			if (!$ok)
-			{
-				throw new RuntimeException('iblock type: ' . $obType->LAST_ERROR);
-			}
+			return;
 		}
 
+		$obType = new CIBlockType();
+		$ok = $obType->Add([
+			'ID' => self::TYPE,
+			'SECTIONS' => 'Y',
+			'SORT' => 90,
+			'LANG' => [
+				'ru' => [
+					'NAME' => 'Новости',
+					'SECTION_NAME' => 'Раздел',
+					'ELEMENT_NAME' => 'Новость',
+				],
+				'en' => [
+					'NAME' => 'News',
+					'SECTION_NAME' => 'Section',
+					'ELEMENT_NAME' => 'News item',
+				],
+			],
+		]);
+		if (!$ok)
+		{
+			throw new RuntimeException('iblock type: ' . $obType->LAST_ERROR);
+		}
+	}
+
+	/**
+	 * @throws RuntimeException
+	 */
+	protected static function createIblock(): int
+	{
 		$siteIds = [];
 		$rsSites = SiteTable::getList(['select' => ['LID'], 'filter' => ['=ACTIVE' => 'Y']]);
 		while ($site = $rsSites->fetch())
@@ -118,7 +158,7 @@ class Iblock
 		$obIblock = new CIBlock();
 		$iblockId = (int)$obIblock->Add([
 			'ACTIVE' => 'Y',
-			'NAME' => 'Новости (mtai.news)',
+			'NAME' => 'Новости',
 			'CODE' => self::CODE,
 			'IBLOCK_TYPE_ID' => self::TYPE,
 			'SITE_ID' => $siteIds,
@@ -153,6 +193,30 @@ class Iblock
 	}
 
 	/**
+	 * Переводит инфоблок в режим расширенных прав, если он ещё в простом.
+	 * Уже настроенные права при этом не трогаются: конвертация GROUP_ID
+	 * выполняется ядром только при смене режима.
+	 *
+	 * @param int $iblockId ID инфоблока новостей
+	 */
+	public static function enableExtendedRights(int $iblockId): void
+	{
+		$current = CIBlock::GetArrayByID($iblockId);
+		if (!$current || ($current['RIGHTS_MODE'] ?? 'S') === 'E')
+		{
+			return;
+		}
+
+		$obIblock = new CIBlock();
+		$obIblock->Update($iblockId, [
+			'RIGHTS_MODE' => 'E',
+			'GROUP_ID' => [1 => 'X', 2 => 'R'],
+		]);
+
+		\CIBlock::clearIblockTagCache($iblockId);
+	}
+
+	/**
 	 * Правило urlrewrite для детальных страниц: /news/{id}/ → /news/detail.php?ID={id}.
 	 * Добавляется только если его ещё нет.
 	 */
@@ -179,22 +243,34 @@ class Iblock
 	}
 
 	/**
-	 * Удаляет инфоблок новостей вместе с содержимым и тип инфоблоков модуля.
+	 * Удаляет тип и инфоблок новостей только если они были созданы модулем.
+	 * Переиспользованные (заведённые до установки) не трогаются.
 	 */
 	public static function uninstall(): void
 	{
-		$iblockId = self::getIblockId();
-		if ($iblockId > 0)
+		Loader::includeModule('iblock');
+
+		if (Option::get('mtai.news', self::OPTION_CREATED_IBLOCK, 'N') === 'Y')
 		{
-			\CIBlockSection::DeleteAll($iblockId);
-			\CIBlockElement::DeleteAll($iblockId);
-			CIBlock::Delete($iblockId);
+			$iblockId = self::getIblockId();
+			if ($iblockId > 0)
+			{
+				// полный каскад: элементы, разделы, права, свойства;
+				// CIBlockElement/CIBlockSection::DeleteAll на этой сборке нет
+				CIBlock::Delete($iblockId);
+			}
 		}
 
-		$rsType = CIBlockType::GetList([], ['=ID' => self::TYPE]);
-		if ($rsType->Fetch())
+		if (Option::get('mtai.news', self::OPTION_CREATED_TYPE, 'N') === 'Y')
 		{
-			CIBlockType::Delete(self::TYPE);
+			$rsType = CIBlockType::GetList([], ['=ID' => self::TYPE]);
+			if ($rsType->Fetch())
+			{
+				CIBlockType::Delete(self::TYPE);
+			}
 		}
+
+		Option::delete('mtai.news', self::OPTION_CREATED_IBLOCK);
+		Option::delete('mtai.news', self::OPTION_CREATED_TYPE);
 	}
 }

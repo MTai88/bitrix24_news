@@ -130,11 +130,27 @@
 	color: #2e6ee4;
 }
 
-/* штатная разметка like_react рассчитана на строку Живой ленты и сдвигает
-   панель эмодзи влево на 87px — в карточке ленты она налегает на кнопку */
-.mnt-card__stat .feed-post-emoji-top-panel-box {
-	padding-left: 0;
-	margin-left: 0;
+/* штатная разметка like_react рассчитана на строку Живой ленты
+   (.feed-post-cont-wrap): панель эмодзи сдвинута влево (margin -87px)
+   и обрезана (max-height 22px + overflow hidden при иконках 21px+рамка).
+   В карточке ленты снимаем сдвиг и обрезку, сажаем панель на одну линию
+   с кнопкой, просмотрами и комментариями */
+.mnt-card__stat--like .feed-post-emoji-top-panel-outer {
+	display: inline-flex;
+	align-items: center;
+	padding-bottom: 0;
+}
+
+.mnt-card__stat--like .feed-post-emoji-top-panel-box {
+	padding: 0;
+	margin: 0;
+}
+
+.mnt-card__stat--like .feed-post-emoji-top-panel-box.feed-post-emoji-top-panel-container-active {
+	display: inline-flex;
+	align-items: center;
+	max-height: none;
+	overflow: visible;
 }
 
 .mnt-card__stat-icon {

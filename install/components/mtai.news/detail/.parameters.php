@@ -21,7 +21,7 @@ $arComponentParameters = [
 			'PARENT' => 'BASE',
 			'NAME' => 'Тип инфоблока',
 			'TYPE' => 'STRING',
-			'DEFAULT' => 'mtai_news',
+			'DEFAULT' => 'news',
 		],
 		'BACK_URL' => [
 			'PARENT' => 'URL_TEMPLATES_PAGE',
