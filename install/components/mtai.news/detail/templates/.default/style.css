@@ -103,3 +103,10 @@
 	font-size: 20px;
 	color: #1d2939;
 }
+
+/* живая лента indent'ит комментарии под постом (margin-left 68px у блока) —
+   в детальной новости они идут по колонке статьи. Отступ формы
+   .feed-com-add-box (61px) не трогать: там сидит аватар поля */
+.mnt-detail__comments .feed-comments-block {
+	margin-left: 0;
+}
