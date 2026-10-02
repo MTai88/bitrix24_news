@@ -212,3 +212,11 @@
 		width: 100%;
 	}
 }
+
+/* попап просмотров: штатный CSS писался до box-sizing: border-box —
+   заголовок с фиксированной высотой и паддингами при border-box
+   вылезает на свой border-bottom */
+.bx-contentview-wrap-block .bx-contentview-popup-name-link.contentview-name,
+.bx-contentview-wrap-block .bx-contentview-popup-name.contentview-name {
+	box-sizing: content-box;
+}
