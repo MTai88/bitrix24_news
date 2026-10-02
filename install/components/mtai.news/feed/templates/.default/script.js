@@ -119,6 +119,9 @@
 				if (sentinel) {
 					sentinel.classList.remove('is-loading');
 				}
+				// подгрузка изменила глубину ленты — догоняем состояние
+				// (позиция скролла не меняется, scroll-обработчик не сработает)
+				saveState(window.scrollY);
 				maybeLoadMore();
 			});
 	}
